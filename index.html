@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Aniversariantes A4 - Biofisic</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --cor-texto: #ffffff;
+            --cor-data: #000000; 
+            --cor-pontilhado: rgba(255, 255, 255, 0.4);
+            --cor-fundo-biofisic: #81ce38; /* Verde escuro padrão da marca */
+            --fonte-principal: 'Montserrat', sans-serif;
+        }
+
+        body {
+            font-family: var(--fonte-principal);
+            background-color: #2b2b2b; 
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Controlos de Upload e Impressão (Não saem na impressão/PNG) */
+        .controles {
+            background: #111;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .controles input[type="file"] {
+            margin: 15px 0;
+            font-size: 16px;
+            color: white;
+            width: 100%;
+        }
+        
+        .grupo-botoes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-imprimir {
+            background-color: var(--cor-data);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 800;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-imprimir:hover {
+            background-color: #e6b000;
+        }
+
+        .btn-baixar {
+            background-color: #ffffff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 800;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-baixar:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* * CONTAINER DE PÁGINAS (Para suportar múltiplas folhas) */
+        #areaImpressao {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px; /* Espaço entre as páginas na visualização da tela */
+        }
+
+        /* * CONFIGURAÇÃO ESTRITA DA FOLHA A4 */
+        .folha-a4 {
+            width: 210mm;
+            height: 297mm; /* Altura cravada no padrão A4 */
+            background-color: var(--cor-fundo-biofisic);
+            
+            /* 👇 Coloque a sua imagem de fundo do Canva aqui 👇 */
+            /* background-image: url('versaocanva.png'); */
+            background-size: cover;
+            background-position: center;
+            
+            /* MARGENS DE SEGURANÇA: 70mm no topo (Logo/Título), 15mm nas laterais, 40mm na base (Corte) */
+            padding: 70mm 15mm 40mm 15mm; 
+            box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,1);
+            position: relative;
+            overflow: hidden; 
+            
+            /* MÁGICA DA CENTRALIZAÇÃO: Empurra o bloco de nomes pro meio exato do espaço disponível */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+        }
+
+        /* Grelha de Duas Colunas Físicas e Rígidas */
+        .grid-duas-colunas {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 40px; 
+        }
+
+        .coluna {
+            width: 50%; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Layout de cada linha (Nome ..... Dia) */
+        .item-aniversariante {
+            display: flex;
+            align-items: flex-end; 
+            margin-bottom: 5px; /* Respiro entre os nomes */
+            font-size: 11px; /* Fonte num tamanho agradável para leitura */
+            width: 100%; 
+        }
+
+        .nome {
+            font-weight: 600;
+            text-transform: uppercase; 
+            white-space: nowrap;
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: 78%; 
+        }
+
+        .pontilhados {
+            flex-grow: 1; 
+            border-bottom: 2px dotted var(--cor-pontilhado);
+            margin: 0 4px; 
+            position: relative;
+            top: -3px; 
+        }
+
+        .dia {
+            font-weight: 800;
+            color: var(--cor-data);
+            font-size: 14px; 
+            line-height: 1;
+        }
+
+        /* * REGRAS DE IMPRESSÃO */
+        @media print {
+            body {
+                background-color: transparent;
+                padding: 0;
+                margin: 0;
+            }
+            .controles {
+                display: none !important; 
+            }
+            #areaImpressao {
+                gap: 0;
+            }
+            .folha-a4 {
+                box-shadow: none;
+                margin: 0;
+                width: 210mm;
+                height: 297mm;
+                padding: 70mm 15mm 40mm 15mm; 
+                page-break-after: always; /* Garante que cada div vire uma página nova no PDF */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            @page {
+                size: A4;
+                margin: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controles">
+        <h2>Gerador de Lista A4</h2>
+        <p>Faça o upload da planilha <strong>Excel (.XLS / .XLSX)</strong></p>
+        <input type="file" id="arquivoExcel" accept=".xls,.xlsx">
+        <br>
+        <div class="grupo-botoes">
+            <button class="btn-imprimir" onclick="window.print()">🖨️ Exportar PDF</button>
+            <button class="btn-baixar" onclick="baixarComoPNG()">📥 Baixar como PNG</button>
+        </div>
+    </div>
+
+    <div id="areaImpressao">
+        </div>
+
+    <script>
+        // --- LÓGICA DE LEITURA DO EXCEL ---
+        document.getElementById('arquivoExcel').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            reader.onload = function(evento) {
+                const data = new Uint8Array(evento.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                const linhasExcel = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                processarDadosExcel(linhasExcel);
+            };
+            
+            reader.readAsArrayBuffer(file); 
+        });
+
+        function processarDadosExcel(linhas) {
+            let aniversariantes = [];
+            let processandoNomes = false;
+
+            // Extração de dados (mesma lógica confiável de antes)
+            for (let i = 0; i < linhas.length; i++) {
+                const linhaAtual = linhas[i];
+                if (!linhaAtual || linhaAtual.length === 0) continue;
+
+                const celulasPreenchidas = linhaAtual.filter(celula => celula !== null && celula !== undefined && String(celula).trim() !== '');
+                if (celulasPreenchidas.length === 0) continue;
+
+                const linhaTexto = celulasPreenchidas.join(' ').toLowerCase();
+
+                if (linhaTexto.includes('nome') && linhaTexto.includes('dia')) {
+                    processandoNomes = true;
+                    continue; 
+                }
+
+                if (processandoNomes) {
+                    let nomeExtraido = '';
+                    let diaExtraido = '';
+                    const ultimoElemento = String(celulasPreenchidas[celulasPreenchidas.length - 1]).trim();
+
+                    if (!isNaN(ultimoElemento)) {
+                        diaExtraido = ultimoElemento;
+                        nomeExtraido = celulasPreenchidas.slice(0, celulasPreenchidas.length - 1).join(' ').trim();
+                    } else {
+                        for (let j = 0; j < celulasPreenchidas.length; j++) {
+                            let valor = String(celulasPreenchidas[j]).trim();
+                            if (!isNaN(valor)) {
+                                diaExtraido = valor;
+                            } else {
+                                nomeExtraido += (nomeExtraido ? ' ' : '') + valor;
+                            }
+                        }
+                    }
+
+                    if (nomeExtraido && diaExtraido) {
+                        aniversariantes.push({ nome: nomeExtraido, dia: diaExtraido });
+                    }
+                }
+            }
+
+            const areaImpressao = document.getElementById('areaImpressao');
+            areaImpressao.innerHTML = ''; // Limpa as páginas anteriores
+
+            // CONFIGURAÇÃO DA PAGINAÇÃO
+            const LIMITE_POR_FOLHA = 70; // 35 nomes por coluna
+            const totalPaginas = Math.ceil(aniversariantes.length / LIMITE_POR_FOLHA);
+
+            // Cria quantas folhas A4 forem necessárias
+            for(let p = 0; p < totalPaginas; p++) {
+                const itensDestaPagina = aniversariantes.slice(p * LIMITE_POR_FOLHA, (p + 1) * LIMITE_POR_FOLHA);
+
+                const folha = document.createElement('div');
+                folha.className = 'folha-a4';
+                folha.id = `paginaA4_${p + 1}`; // Adicionado um ID para facilitar a captura do PNG
+
+                const grid = document.createElement('div');
+                grid.className = 'grid-duas-colunas';
+
+                const colEsq = document.createElement('div');
+                colEsq.className = 'coluna';
+                const colDir = document.createElement('div');
+                colDir.className = 'coluna';
+
+                const metade = Math.ceil(itensDestaPagina.length / 2);
+
+                itensDestaPagina.forEach((pessoa, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'item-aniversariante';
+                    div.innerHTML = `
+                        <span class="nome" title="${pessoa.nome}">${pessoa.nome}</span>
+                        <span class="pontilhados"></span>
+                        <span class="dia">${pessoa.dia}</span>
+                    `;
+                    
+                    if (index < metade) {
+                        colEsq.appendChild(div);
+                    } else {
+                        colDir.appendChild(div);
+                    }
+                });
+
+                grid.appendChild(colEsq);
+                grid.appendChild(colDir);
+                folha.appendChild(grid);
+                
+                areaImpressao.appendChild(folha);
+            }
+        }
+
+        // --- NOVA LÓGICA DE EXPORTAÇÃO PARA PNG ---
+        async function baixarComoPNG() {
+            const folhas = document.querySelectorAll('.folha-a4');
+            
+            if (folhas.length === 0) {
+                alert("Por favor, faça o upload de uma planilha primeiro!");
+                return;
+            }
+
+            // O botão altera o texto para avisar que está processando
+            const btn = document.querySelector('.btn-baixar');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = "⏳ Processando...";
+            btn.disabled = true;
+
+            // Passa por todas as folhas geradas e cria o PNG de cada uma
+            for (let i = 0; i < folhas.length; i++) {
+                const folha = folhas[i];
+                
+                // O html2canvas tira a "foto" do elemento HTML
+                const canvas = await html2canvas(folha, {
+                    scale: 2, // Scale 2 garante uma resolução melhor/HD na imagem final
+                    useCORS: true, // Permite carregar a imagem de fundo do Canva corretamente
+                    backgroundColor: "#0a2111" // Garante o fundo verde na exportação
+                });
+
+                // Converte o canvas para um arquivo de imagem baixável
+                const link = document.createElement('a');
+                link.download = `Aniversariantes_Biofisic_Pagina_${i + 1}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+
+            // Restaura o botão
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
