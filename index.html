@@ -14,11 +14,10 @@
 
     <style>
         :root {
-            /* Cores atualizadas conforme solicitado */
             --cor-texto: #000000;
             --cor-data: #000000; 
             --cor-pontilhado: #000000;
-            --cor-fundo-biofisic: #81ce38; /* Verde escuro padrão da marca */
+            --cor-fundo-biofisic: #81ce38; /* Verde padrão da marca */
             --fonte-principal: 'Montserrat', sans-serif;
         }
 
@@ -87,7 +86,6 @@
         .btn-baixar-todas { background-color: #ffffff; color: #000; }
         .btn-baixar-todas:hover { background-color: #e0e0e0; }
 
-        /* Estilo do botão individual que fica embaixo de cada página */
         .btn-baixar-unica {
             background-color: #444;
             color: #fff;
@@ -102,10 +100,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 40px; /* Mais espaço para acomodar o botão individual */
+            gap: 40px; 
         }
 
-        /* Wrapper para segurar a folha e o seu respectivo botão */
         .wrapper-pagina {
             display: flex;
             flex-direction: column;
@@ -145,15 +142,15 @@
             background-color: #000000;
             color: #ffffff;
             padding: 6px 20px;
-            border-radius: 20px; /* Contorno arredondado */
+            border-radius: 20px; 
             font-size: 22px;
             font-weight: 800;
             text-transform: uppercase;
-            margin-bottom: 6px; /* Espaço entre as duas linhas */
+            margin-bottom: 6px; 
             letter-spacing: 1.5px;
         }
 
-        /* --- RODAPÉ --- */
+        /* --- RODAPÉ AJUSTADO E CENTRALIZADO --- */
         .rodape-container {
             width: 100%;
             margin-bottom: 15mm; 
@@ -164,21 +161,22 @@
         .caixa-rodape {
             background-color: #000000;
             color: #ffffff;
-            border-radius: 15px;
-            padding: 12px 25px;
+            border-radius: 18px; /* Borda um pouco mais robusta */
+            padding: 16px 35px; /* Aumentado o contorno externo */
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 20px; /* Mais espaço entre o texto e o bolo */
         }
 
         .texto-rodape {
             display: flex;
             flex-direction: column;
-            text-align: right;
-            font-size: 16px;
+            text-align: center; /* CENTRALIZADO NO MEIO CERTINHO */
+            font-size: 20px; /* TEXTO AUMENTADO */
             font-weight: 800;
             line-height: 1.3;
+            letter-spacing: 0.5px;
         }
 
         /* --- CORPO DA LISTA (NOMES) --- */
@@ -212,7 +210,7 @@
         }
 
         .nome {
-            font-weight: 700; /* Levemente mais grosso para destacar no preto */
+            font-weight: 700; 
             text-transform: uppercase; 
             white-space: nowrap;
             overflow: hidden; 
@@ -351,16 +349,14 @@
             for(let p = 0; p < totalPaginas; p++) {
                 const itensDestaPagina = aniversariantes.slice(p * LIMITE_POR_FOLHA, (p + 1) * LIMITE_POR_FOLHA);
 
-                // Criar o Wrapper que vai segurar a folha e o botão
                 const wrapper = document.createElement('div');
                 wrapper.className = 'wrapper-pagina';
 
-                // Criar Folha A4
                 const folha = document.createElement('div');
                 folha.className = 'folha-a4';
                 folha.id = `folha_render_${p + 1}`;
                 
-                // 1. CABEÇALHO ATUALIZADO (Em 2 linhas com fundo arredondado)
+                // 1. CABEÇALHO
                 const cabecalho = document.createElement('div');
                 cabecalho.className = 'cabecalho-container';
                 cabecalho.innerHTML = `
@@ -370,7 +366,7 @@
                 `;
                 folha.appendChild(cabecalho);
 
-                // 2. CORPO (Nomes e pontilhados agora recebem a cor preta do CSS)
+                // 2. CORPO
                 const containerNomes = document.createElement('div');
                 containerNomes.className = 'container-nomes';
 
@@ -405,16 +401,16 @@
                 containerNomes.appendChild(grid);
                 folha.appendChild(containerNomes);
 
-                // 3. RODAPÉ ATUALIZADO (Cápsula preta com texto duplo e Ícone Vetor Branco)
+                // 3. RODAPÉ (Texto centralizado, ampliado e Bolo Maior)
                 const rodape = document.createElement('div');
                 rodape.className = 'rodape-container';
                 rodape.innerHTML = `
                     <div class="caixa-rodape">
                         <div class="texto-rodape">
                             <span>DESEJAMOS A TODOS</span>
-                            <span>UM FELIZ ANIVERSÁRIO</span>
+                            <span>UM FELIZ ANIVERSÁRIO A TODOS</span>
                         </div>
-                        <svg width="35" height="35" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 6C12.5523 6 13 5.55228 13 5V3C13 2.44772 12.5523 2 12 2C11.4477 2 11 2.44772 11 3V5C11 5.55228 11.4477 6 12 6Z"/>
                             <path d="M16 7C16.5523 7 17 6.55228 17 6V4C17 3.44772 16.5523 3 16 3C15.4477 3 15 3.44772 15 4V6C15 6.55228 15.4477 7 16 7Z"/>
                             <path d="M8 7C8.55228 7 9 6.55228 9 6V4C9 3.44772 8.55228 3 8 3C7.44772 3 7 3.44772 7 4V6C7 6.55228 7.44772 7 8 7Z"/>
@@ -427,7 +423,6 @@
                 
                 wrapper.appendChild(folha);
 
-                // 4. BOTÃO INDIVIDUAL DE DOWNLOAD
                 const btnBaixar = document.createElement('button');
                 btnBaixar.className = 'btn-acao btn-baixar-unica';
                 btnBaixar.innerText = `⬇️ Baixar esta página (${p + 1})`;
@@ -438,7 +433,6 @@
             }
         }
 
-        // Função responsável por tirar o print (html2canvas) de um elemento específico
         async function processarDownloadPNG(idFolha, numeroPagina) {
             const folha = document.getElementById(idFolha);
             if (!folha) return;
@@ -458,7 +452,6 @@
             link.click();
         }
 
-        // Função que passa por todas as folhas e baixa uma a uma, com delay para o navegador não travar
         async function baixarTodasEmSequencia() {
             const folhas = document.querySelectorAll('.folha-a4');
             
@@ -473,10 +466,7 @@
             btn.disabled = true;
 
             for (let i = 0; i < folhas.length; i++) {
-                // Chama a mesma função do botão individual
                 await processarDownloadPNG(folhas[i].id, i + 1);
-                
-                // Espera 1 segundo inteiro antes de baixar a próxima, resolvendo o bug do Chrome/Edge
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
