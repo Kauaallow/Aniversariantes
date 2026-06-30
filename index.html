@@ -6,7 +6,6 @@
     <title>Gerador de Aniversariantes A4 - Biofisic</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +14,10 @@
 
     <style>
         :root {
-            --cor-texto: #ffffff;
+            /* Cores atualizadas conforme solicitado */
+            --cor-texto: #000000;
             --cor-data: #000000; 
-            --cor-pontilhado: rgba(255, 255, 255, 0.4);
+            --cor-pontilhado: #000000;
             --cor-fundo-biofisic: #81ce38; /* Verde escuro padrão da marca */
             --fonte-principal: 'Montserrat', sans-serif;
         }
@@ -32,7 +32,7 @@
             align-items: center;
         }
 
-        /* Controlos de Upload e Impressão (Não saem na impressão/PNG) */
+        /* Controlos de Upload e Impressão */
         .controles {
             background: #111;
             color: white;
@@ -45,11 +45,21 @@
             max-width: 600px;
         }
 
+        .controles input[type="text"],
         .controles input[type="file"] {
-            margin: 15px 0;
+            margin: 10px 0;
             font-size: 16px;
-            color: white;
             width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: #222;
+            color: white;
+        }
+
+        .controles input[type="text"]::placeholder {
+            color: #888;
         }
         
         .grupo-botoes {
@@ -57,11 +67,10 @@
             justify-content: center;
             gap: 15px;
             flex-wrap: wrap;
+            margin-top: 10px;
         }
 
-        .btn-imprimir {
-            background-color: var(--cor-data);
-            color: #000;
+        .btn-acao {
             border: none;
             padding: 10px 20px;
             font-size: 16px;
@@ -72,60 +81,115 @@
             text-transform: uppercase;
         }
 
-        .btn-imprimir:hover {
-            background-color: #e6b000;
-        }
+        .btn-imprimir { background-color: #81ce38; color: #000; }
+        .btn-imprimir:hover { background-color: #6eb52d; }
 
-        .btn-baixar {
-            background-color: #ffffff;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 800;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
+        .btn-baixar-todas { background-color: #ffffff; color: #000; }
+        .btn-baixar-todas:hover { background-color: #e0e0e0; }
 
-        .btn-baixar:hover {
-            background-color: #e0e0e0;
+        /* Estilo do botão individual que fica embaixo de cada página */
+        .btn-baixar-unica {
+            background-color: #444;
+            color: #fff;
+            margin-top: 10px;
+            padding: 8px 15px;
+            font-size: 14px;
         }
+        .btn-baixar-unica:hover { background-color: #666; }
 
-        /* * CONTAINER DE PÁGINAS (Para suportar múltiplas folhas) */
+        /* CONTAINER DE PÁGINAS */
         #areaImpressao {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px; /* Espaço entre as páginas na visualização da tela */
+            gap: 40px; /* Mais espaço para acomodar o botão individual */
         }
 
-        /* * CONFIGURAÇÃO ESTRITA DA FOLHA A4 */
+        /* Wrapper para segurar a folha e o seu respectivo botão */
+        .wrapper-pagina {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* CONFIGURAÇÃO ESTRITA DA FOLHA A4 */
         .folha-a4 {
             width: 210mm;
-            height: 297mm; /* Altura cravada no padrão A4 */
+            height: 297mm; 
             background-color: var(--cor-fundo-biofisic);
-            
-            /* 👇 Coloque a sua imagem de fundo do Canva aqui 👇 */
-            /* background-image: url('versaocanva.png'); */
-            background-size: cover;
-            background-position: center;
-            
-            /* MARGENS DE SEGURANÇA: 70mm no topo (Logo/Título), 15mm nas laterais, 40mm na base (Corte) */
-            padding: 70mm 15mm 40mm 15mm; 
             box-sizing: border-box;
             box-shadow: 0 0 20px rgba(0,0,0,1);
             position: relative;
             overflow: hidden; 
             
-            /* MÁGICA DA CENTRALIZAÇÃO: Empurra o bloco de nomes pro meio exato do espaço disponível */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+        }
+
+        /* --- CABEÇALHO --- */
+        .cabecalho-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15mm; 
+        }
+
+        .logo-biofisic {
+            width: 220px; 
+            margin-bottom: 5mm;
+        }
+
+        .linha-cabecalho {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 6px 20px;
+            border-radius: 20px; /* Contorno arredondado */
+            font-size: 22px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 6px; /* Espaço entre as duas linhas */
+            letter-spacing: 1.5px;
+        }
+
+        /* --- RODAPÉ --- */
+        .rodape-container {
+            width: 100%;
+            margin-bottom: 15mm; 
+            display: flex;
+            justify-content: center;
+        }
+
+        .caixa-rodape {
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 15px;
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .texto-rodape {
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        /* --- CORPO DA LISTA (NOMES) --- */
+        .container-nomes {
+            flex-grow: 1; 
             display: flex;
             flex-direction: column;
             justify-content: center; 
+            padding: 0 15mm; 
         }
 
-        /* Grelha de Duas Colunas Físicas e Rígidas */
         .grid-duas-colunas {
             display: flex;
             justify-content: space-between;
@@ -139,22 +203,22 @@
             flex-direction: column;
         }
 
-        /* Layout de cada linha (Nome ..... Dia) */
         .item-aniversariante {
             display: flex;
             align-items: flex-end; 
-            margin-bottom: 5px; /* Respiro entre os nomes */
-            font-size: 11px; /* Fonte num tamanho agradável para leitura */
+            margin-bottom: 5px; 
+            font-size: 11px; 
             width: 100%; 
         }
 
         .nome {
-            font-weight: 600;
+            font-weight: 700; /* Levemente mais grosso para destacar no preto */
             text-transform: uppercase; 
             white-space: nowrap;
             overflow: hidden; 
             text-overflow: ellipsis; 
             max-width: 78%; 
+            color: var(--cor-texto);
         }
 
         .pontilhados {
@@ -172,33 +236,22 @@
             line-height: 1;
         }
 
-        /* * REGRAS DE IMPRESSÃO */
+        /* REGRAS DE IMPRESSÃO */
         @media print {
-            body {
-                background-color: transparent;
-                padding: 0;
-                margin: 0;
-            }
-            .controles {
-                display: none !important; 
-            }
-            #areaImpressao {
-                gap: 0;
-            }
+            body { background-color: transparent; padding: 0; margin: 0; }
+            .controles, .btn-baixar-unica { display: none !important; }
+            #areaImpressao { gap: 0; }
+            .wrapper-pagina { margin: 0; padding: 0; }
             .folha-a4 {
                 box-shadow: none;
                 margin: 0;
                 width: 210mm;
                 height: 297mm;
-                padding: 70mm 15mm 40mm 15mm; 
-                page-break-after: always; /* Garante que cada div vire uma página nova no PDF */
+                page-break-after: always; 
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-            @page {
-                size: A4;
-                margin: 0; 
-            }
+            @page { size: A4; margin: 0; }
         }
     </style>
 </head>
@@ -206,12 +259,16 @@
 
     <div class="controles">
         <h2>Gerador de Lista A4</h2>
-        <p>Faça o upload da planilha <strong>Excel (.XLS / .XLSX)</strong></p>
+        
+        <input type="text" id="mesInput" placeholder="Digite o Mês (Ex: ABRIL)">
+        <input type="text" id="nomeArquivoInput" placeholder="Nome para o arquivo (Ex: Unidade_Batatais)">
+        
+        <p style="margin-bottom: 5px;">Faça o upload da planilha <strong>Excel (.XLS / .XLSX)</strong></p>
         <input type="file" id="arquivoExcel" accept=".xls,.xlsx">
-        <br>
+        
         <div class="grupo-botoes">
-            <button class="btn-imprimir" onclick="window.print()">🖨️ Exportar PDF</button>
-            <button class="btn-baixar" onclick="baixarComoPNG()">📥 Baixar como PNG</button>
+            <button class="btn-acao btn-imprimir" onclick="window.print()">🖨️ Exportar PDF</button>
+            <button class="btn-acao btn-baixar-todas" onclick="baixarTodasEmSequencia()">📥 Baixar Todas as Imagens</button>
         </div>
     </div>
 
@@ -219,7 +276,6 @@
         </div>
 
     <script>
-        // --- LÓGICA DE LEITURA DO EXCEL ---
         document.getElementById('arquivoExcel').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -245,7 +301,6 @@
             let aniversariantes = [];
             let processandoNomes = false;
 
-            // Extração de dados (mesma lógica confiável de antes)
             for (let i = 0; i < linhas.length; i++) {
                 const linhaAtual = linhas[i];
                 if (!linhaAtual || linhaAtual.length === 0) continue;
@@ -286,19 +341,38 @@
             }
 
             const areaImpressao = document.getElementById('areaImpressao');
-            areaImpressao.innerHTML = ''; // Limpa as páginas anteriores
+            areaImpressao.innerHTML = ''; 
 
-            // CONFIGURAÇÃO DA PAGINAÇÃO
-            const LIMITE_POR_FOLHA = 70; // 35 nomes por coluna
+            const mesDigitado = document.getElementById('mesInput').value.trim() || '...';
+
+            const LIMITE_POR_FOLHA = 70; 
             const totalPaginas = Math.ceil(aniversariantes.length / LIMITE_POR_FOLHA);
 
-            // Cria quantas folhas A4 forem necessárias
             for(let p = 0; p < totalPaginas; p++) {
                 const itensDestaPagina = aniversariantes.slice(p * LIMITE_POR_FOLHA, (p + 1) * LIMITE_POR_FOLHA);
 
+                // Criar o Wrapper que vai segurar a folha e o botão
+                const wrapper = document.createElement('div');
+                wrapper.className = 'wrapper-pagina';
+
+                // Criar Folha A4
                 const folha = document.createElement('div');
                 folha.className = 'folha-a4';
-                folha.id = `paginaA4_${p + 1}`; // Adicionado um ID para facilitar a captura do PNG
+                folha.id = `folha_render_${p + 1}`;
+                
+                // 1. CABEÇALHO ATUALIZADO (Em 2 linhas com fundo arredondado)
+                const cabecalho = document.createElement('div');
+                cabecalho.className = 'cabecalho-container';
+                cabecalho.innerHTML = `
+                    <img src="logo-principal-preto.png" class="logo-biofisic" alt="Logo Biofisic">
+                    <div class="linha-cabecalho">ANIVERSARIANTES</div>
+                    <div class="linha-cabecalho">DO MÊS DE ${mesDigitado}</div>
+                `;
+                folha.appendChild(cabecalho);
+
+                // 2. CORPO (Nomes e pontilhados agora recebem a cor preta do CSS)
+                const containerNomes = document.createElement('div');
+                containerNomes.className = 'container-nomes';
 
                 const grid = document.createElement('div');
                 grid.className = 'grid-duas-colunas';
@@ -328,14 +402,64 @@
 
                 grid.appendChild(colEsq);
                 grid.appendChild(colDir);
-                folha.appendChild(grid);
+                containerNomes.appendChild(grid);
+                folha.appendChild(containerNomes);
+
+                // 3. RODAPÉ ATUALIZADO (Cápsula preta com texto duplo e Ícone Vetor Branco)
+                const rodape = document.createElement('div');
+                rodape.className = 'rodape-container';
+                rodape.innerHTML = `
+                    <div class="caixa-rodape">
+                        <div class="texto-rodape">
+                            <span>DESEJAMOS A TODOS</span>
+                            <span>UM FELIZ ANIVERSÁRIO A TODOS</span>
+                        </div>
+                        <svg width="35" height="35" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 6C12.5523 6 13 5.55228 13 5V3C13 2.44772 12.5523 2 12 2C11.4477 2 11 2.44772 11 3V5C11 5.55228 11.4477 6 12 6Z"/>
+                            <path d="M16 7C16.5523 7 17 6.55228 17 6V4C17 3.44772 16.5523 3 16 3C15.4477 3 15 3.44772 15 4V6C15 6.55228 15.4477 7 16 7Z"/>
+                            <path d="M8 7C8.55228 7 9 6.55228 9 6V4C9 3.44772 8.55228 3 8 3C7.44772 3 7 3.44772 7 4V6C7 6.55228 7.44772 7 8 7Z"/>
+                            <path d="M21 13V11C21 9.89543 20.1046 9 19 9H5C3.89543 9 3 9.89543 3 11V13C3 13.5523 3.44772 14 4 14H20C20.5523 14 21 13.5523 21 13Z"/>
+                            <path d="M4 16V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V16H4Z"/>
+                        </svg>
+                    </div>
+                `;
+                folha.appendChild(rodape);
                 
-                areaImpressao.appendChild(folha);
+                wrapper.appendChild(folha);
+
+                // 4. BOTÃO INDIVIDUAL DE DOWNLOAD
+                const btnBaixar = document.createElement('button');
+                btnBaixar.className = 'btn-acao btn-baixar-unica';
+                btnBaixar.innerText = `⬇️ Baixar esta página (${p + 1})`;
+                btnBaixar.onclick = () => processarDownloadPNG(folha.id, p + 1);
+                
+                wrapper.appendChild(btnBaixar);
+                areaImpressao.appendChild(wrapper);
             }
         }
 
-        // --- NOVA LÓGICA DE EXPORTAÇÃO PARA PNG ---
-        async function baixarComoPNG() {
+        // Função responsável por tirar o print (html2canvas) de um elemento específico
+        async function processarDownloadPNG(idFolha, numeroPagina) {
+            const folha = document.getElementById(idFolha);
+            if (!folha) return;
+
+            let nomeBase = document.getElementById('nomeArquivoInput').value.trim();
+            if(nomeBase === "") nomeBase = "Aniversariantes_Biofisic";
+
+            const canvas = await html2canvas(folha, {
+                scale: 2, 
+                useCORS: true, 
+                backgroundColor: "#81ce38" 
+            });
+
+            const link = document.createElement('a');
+            link.download = `${nomeBase}_Pagina_${numeroPagina}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Função que passa por todas as folhas e baixa uma a uma, com delay para o navegador não travar
+        async function baixarTodasEmSequencia() {
             const folhas = document.querySelectorAll('.folha-a4');
             
             if (folhas.length === 0) {
@@ -343,31 +467,19 @@
                 return;
             }
 
-            // O botão altera o texto para avisar que está processando
-            const btn = document.querySelector('.btn-baixar');
+            const btn = document.querySelector('.btn-baixar-todas');
             const textoOriginal = btn.innerHTML;
-            btn.innerHTML = "⏳ Processando...";
+            btn.innerHTML = "⏳ Baixando...";
             btn.disabled = true;
 
-            // Passa por todas as folhas geradas e cria o PNG de cada uma
             for (let i = 0; i < folhas.length; i++) {
-                const folha = folhas[i];
+                // Chama a mesma função do botão individual
+                await processarDownloadPNG(folhas[i].id, i + 1);
                 
-                // O html2canvas tira a "foto" do elemento HTML
-                const canvas = await html2canvas(folha, {
-                    scale: 2, // Scale 2 garante uma resolução melhor/HD na imagem final
-                    useCORS: true, // Permite carregar a imagem de fundo do Canva corretamente
-                    backgroundColor: "#0a2111" // Garante o fundo verde na exportação
-                });
-
-                // Converte o canvas para um arquivo de imagem baixável
-                const link = document.createElement('a');
-                link.download = `Aniversariantes_Biofisic_Pagina_${i + 1}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+                // Espera 1 segundo inteiro antes de baixar a próxima, resolvendo o bug do Chrome/Edge
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
 
-            // Restaura o botão
             btn.innerHTML = textoOriginal;
             btn.disabled = false;
         }
